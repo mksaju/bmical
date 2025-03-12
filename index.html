@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,6 +97,11 @@
       animation: slideIn 0.5s ease-in-out;
     }
 
+    .result-line {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
     /* BMI Scale */
     .bmi-scale {
       margin-top: 20px;
@@ -149,8 +154,12 @@
           <input type="number" class="form-control" id="weight" placeholder="ওজন লিখুন">
         </div>
         <div class="mb-3">
-          <label for="height" class="form-label">উচ্চতা (cm):</label>
-          <input type="number" class="form-control" id="height" placeholder="উচ্চতা লিখুন">
+          <label for="heightFt" class="form-label">উচ্চতা (ফুট):</label>
+          <input type="number" class="form-control" id="heightFt" placeholder="ফুট লিখুন">
+        </div>
+        <div class="mb-3">
+          <label for="heightIn" class="form-label">উচ্চতা (ইঞ্চি):</label>
+          <input type="number" class="form-control" id="heightIn" placeholder="ইঞ্চি লিখুন">
         </div>
         <button class="btn btn-primary" onclick="calculateBMI()">ক্যালকুলেট করুন</button>
         <div class="result" id="bmiResult"></div>
@@ -167,14 +176,19 @@
   <script>
     function calculateBMI() {
       const weight = parseFloat(document.getElementById('weight').value);
-      const height = parseFloat(document.getElementById('height').value) / 100; // Convert cm to meters
+      const heightFt = parseFloat(document.getElementById('heightFt').value);
+      const heightIn = parseFloat(document.getElementById('heightIn').value);
 
-      if (isNaN(weight) || isNaN(height)) {
+      if (isNaN(weight) || isNaN(heightFt) || isNaN(heightIn)) {
         document.getElementById('bmiResult').innerText = "সঠিক মান লিখুন।";
         return;
       }
 
-      const bmi = (weight / (height * height)).toFixed(2);
+      // ফুট এবং ইঞ্চিকে মিটারে রূপান্তর
+      const heightInMeters = (heightFt * 0.3048) + (heightIn * 0.0254);
+
+      // BMI গণনা
+      const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2);
       let result = "";
 
       if (bmi < 18.5) {
@@ -187,7 +201,25 @@
         result = "অবেসিটি (Obesity)";
       }
 
-      document.getElementById('bmiResult').innerText = `BMI: ${bmi} - ${result}`;
+      // আদর্শ ওজন গণনা (BMI = 22 ধরে)
+      const idealWeight = (22 * (heightInMeters * heightInMeters)).toFixed(1);
+      const weightDifference = (weight - idealWeight).toFixed(1);
+
+      let weightMessage = "";
+      if (weightDifference > 0) {
+        weightMessage = `আপনার ${Math.abs(weightDifference)} kg ওজন কমাতে হবে।`;
+      } else if (weightDifference < 0) {
+        weightMessage = `আপনার ${Math.abs(weightDifference)} kg ওজন বাড়াতে হবে।`;
+      } else {
+        weightMessage = "আপনার ওজন আদর্শ অবস্থায় আছে।";
+      }
+
+      // ফলাফল দেখানো
+      document.getElementById('bmiResult').innerHTML = `
+        <div class="result-line">BMI: ${bmi} - ${result}</div>
+        <div class="result-line">আদর্শ ওজন: ${idealWeight} kg</div>
+        <div class="result-line">${weightMessage}</div>
+      `;
     }
   </script>
 </body>
